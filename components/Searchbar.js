@@ -1,6 +1,35 @@
+"use client";
 import Image from "next/image";
+import SearchResults from "./SearchResults";
+import { useState } from "react";
+import { useDebounce } from "@/hooks/useDebounce";
+import { useRouter } from "next/navigation";
 
-export default function Searchbar() {
+export default function Searchbar({ docs }) {
+	const [searchResults, setSearchResults] = useState([]);
+	const [term, setTerm] = useState("");
+	const router = useRouter();
+
+	const handleSearchTerm = (e) => {
+		const value = e.target.value;
+		setTerm(value);
+		doSearch(value);
+	};
+
+	const doSearch = useDebounce((term) => {
+		const findDocs = docs.filter((doc) => {
+			return doc.title.toLowerCase().includes(term.toLowerCase());
+		});
+		setSearchResults([...findDocs]);
+	}, 500);
+
+	const closedSearchResults = (e) => {
+		e.preventDefault();
+		router.push(e.target.href);
+		setSearchResults([]);
+		setTerm("");
+	};
+
 	return (
 		<div className="fixed inset-x-0 top-0 z-50 bg-white bg-white/[var(--bg-opacity-light)] px-4 backdrop-blur-sm transition dark:bg-[#17181C] dark:backdrop-blur sm:px-6 lg:left-72 lg:z-30 lg:px-8 xl:left-80 --bg-opacity-light: 0.5 --bg-opacity-dark: 0.2">
 			<div className="container flex h-14 items-center justify-between gap-12">
@@ -22,41 +51,17 @@ export default function Searchbar() {
 							type="text"
 							placeholder="Search..."
 							className="flex-1 focus:border-none focus:outline-none"
+							value={term}
+							onChange={handleSearchTerm}
 						/>
-						<kbd className="ml-auto w-auto text-2xs text-zinc-400 dark:text-zinc-500">
-							<kbd className="font-sans">Ctrl </kbd>
-							<kbd className="font-sans">K</kbd>
-						</kbd>
 					</button>
-					{/* <!-- result card --> */}
-					{/* <div className="absolute left-0 top-12 z-[999] w-full rounded-md bg-white p-4 shadow">
-						<p className="!text-lg">
-							Showing results for
-							<span className="font-semibold">&quot;keyword&quot;:</span>
-						</p>
-						<ul role="list" className="divide-y divide-gray-100 [&>*]:py-2">
-							<li className="">
-								<a className="transition-all hover:text-emerald-600" href="#">
-									How to create a new component in Vue.js
-								</a>
-							</li>
-							<li className="">
-								<a className="transition-all hover:text-emerald-600" href="#">
-									How to create a new component in React.js
-								</a>
-							</li>
-							<li className="">
-								<a className="transition-all hover:text-emerald-600" href="#">
-									Next.js Routing
-								</a>
-							</li>
-							<li className="">
-								<a className="transition-all hover:text-emerald-600" href="#">
-									SSR - What is it?
-								</a>
-							</li>
-						</ul>
-					</div> */}
+					{term && term.trim().length > 0 && (
+						<SearchResults
+							searchResults={searchResults}
+							term={term}
+							closedSearchResults={closedSearchResults}
+						/>
+					)}
 				</div>
 
 				{/* <!-- Mobile Responsive Header Starts --> */}
