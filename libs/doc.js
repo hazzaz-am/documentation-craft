@@ -47,7 +47,6 @@ export async function getDocumentContent(id) {
 		.process(matterResult.content);
 
 	const contentHtml = processedContent.toString();
-	console.log(matterResult.data);
 
 	return {
 		id,
